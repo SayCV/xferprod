@@ -12,6 +12,19 @@
                 "--metadata-file=data/metadata.yml",
                 "--debug",
             ]
+        },
+        {
+            "name": "Test",
+            "type": "python",
+            "request": "launch",
+            "program": "test.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "xfer",
+                "--metadata-file=data/demo1.pcb",
+                "--debug",
+            ]
         }
     ]
 }

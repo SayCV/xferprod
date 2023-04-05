@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 
 """
-### Main command line interface for padsprod.
+### Main command line interface for xferprod.
 
-Each `padsprod` command is mapped to a function which calls the correct
-padsprod class function. 
+Each `xferprod` command is mapped to a function which calls the correct
+xferprod class function. 
 """
 
 import argparse
 import atexit
 import logging
 import sys
+from pathlib import Path as path
 
 import argcomplete
+
+from xferprod import helper
 
 from . import commands
 from ._version import __version__
 from .exceptions import XferprodException
-from xferprod import helper
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,10 @@ def command_info(args):
     print("xferprod version: {}".format(__version__))
     commands.run_info(args)
 
+def command_xfer(args):
+    print("xferprod version: {}".format(__version__))
+    commands.run_xfer(args)
+
 def main():
     """
     Read in command line arguments and call the correct command function.
@@ -38,7 +44,7 @@ def main():
     atexit.register(helper.set_terminal_title, "")
 
     # Create a common parent parser for arguments shared by all subparsers. In
-    # practice there are very few of these since padsprod supports a range of
+    # practice there are very few of these since xferprod supports a range of
     # operations.
     parent = argparse.ArgumentParser(add_help=False)
     parent.add_argument(
@@ -48,18 +54,18 @@ def main():
         "--version",
         action="version",
         version=__version__,
-        help="Print padsprod version and exit",
+        help="Print xferprod version and exit",
     )
     parent.add_argument(
-        "-i", "--input",
-        dest='input',
-        help="Open file path",
+        "--output-dir",
+        type=path,
+        help="Save file root path",
         default=None,
     )
     parent.add_argument(
-        "-o", "--output",
-        dest='output',
-        help="Save file path",
+        "--metadata-file",
+        type=path,
+        help="Provided the metadata file",
         default=None,
     )
 
@@ -73,12 +79,8 @@ def main():
     # commands.
     parent_format = argparse.ArgumentParser(add_help=False)
     parent_format.add_argument(
-        "-f", "-r",
-        "--from", "--read",
-        dest='in_format',
-        metavar='FORMAT',
-        help="yml",
-        choices=["yml", "yml"],
+        "--model",
+        help="model",
         default=None,
     )
 
@@ -94,17 +96,24 @@ def main():
     info = subparser.add_parser(
         "info",
         parents=[parent, parent_format],
-        help="Verbose information about the provided sch and pcb file",
+        help="Verbose information",
     )
     info.set_defaults(func=command_info)
+
+    xfer = subparser.add_parser(
+        "xfer",
+        parents=[parent, parent_format],
+        help="xfer docs to the target dirctory",
+    )
+    xfer.set_defaults(func=command_xfer)
 
     argcomplete.autocomplete(parser)
     args, unknown_args = parser.parse_known_args()
 
-    # Warn about unknown arguments, suggest padsprod update.
+    # Warn about unknown arguments, suggest xferprod update.
     if len(unknown_args) > 0:
         logger.warning(
-            "Unknown arguments passed. You may need to update padsprod.")
+            "Unknown arguments passed. You may need to update xferprod.")
         for unknown_arg in unknown_args:
             logger.warning('Unknown argument "{}"'.format(unknown_arg))
 

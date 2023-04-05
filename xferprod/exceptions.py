@@ -1,6 +1,6 @@
-class PadsprodException(Exception):
+class XferprodException(Exception):
     """
-    Raised when Padsprod detects an issue.
+    Raised when Xferprod detects an issue.
     """
 
     pass

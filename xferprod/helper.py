@@ -6,11 +6,12 @@ users in a nice way.
 import functools
 import logging
 import re
-from string import Template
 import sys
 from pathlib import Path as path
+from string import Template
 
 import colorama
+import rtoml
 
 XFERPROD_ROOT = path(__file__).resolve().parent
 
@@ -35,22 +36,32 @@ def set_terminal_title(title):
         sys.stdout.flush()
 
 def get_variables_recursive(data: dict):
+    lookup = r'.*\${(.*)}.*'
+    pattern = re.compile(lookup)
+    d = {}
     for k, v in data.items():
         if isinstance(v, dict):
             get_variables_recursive(data[k])
         elif isinstance(v, list):
             continue
         else:
+            matched = pattern.findall(v)
+            if len(matched) > 0:
+                t = Template(v)
+                vv = t.substitute(d)
+                v = vv
+                pass
             globals()[f"__lol__{k}"] = v # vars()
+            d[k] = v
         pass
 
 def update_variables_recursive(data: dict) -> str:
     get_variables_recursive(data)
-    data_str = str(data)
+    data_str = rtoml.dumps(data)
     t = Template(data_str)
     d = {}
     for v in globals():
         if v.startswith('__lol__'):
             d[v[7:]] = globals()[v]
     data_str = t.substitute(d)
-    return data_str
+    return rtoml.loads(data_str)

@@ -6,7 +6,8 @@ import logging
 import sys
 from pathlib import Path as path
 
-import toml
+import rtoml
+from . import helper
 
 from .exceptions import XferprodException
 
@@ -26,8 +27,8 @@ def run_xfer(args):
     key_field = data = None
     for metadata_file in metadata_file_lookup:
         try:
-            data = toml.load(metadata_file)
-            key_field = data.get('sch')
+            data = rtoml.load(metadata_file)
+            key_field = data.get('title')
             logger.info(f"Try lookup {metadata_file} succeeded.")
             break
         except Exception as e:
@@ -37,3 +38,8 @@ def run_xfer(args):
         raise XferprodException(f"Metadata file non exist raised at {path(__file__).name} line {sys._getframe().f_lineno}")
     if not key_field:
         raise XferprodException(f"Metadata file corrupted raised at {path(__file__).name} line {sys._getframe().f_lineno}")
+    
+    data = helper.update_variables_recursive(data)
+    toml = rtoml.dumps(data)
+
+    print(toml)

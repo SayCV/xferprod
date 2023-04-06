@@ -25,6 +25,7 @@ entry_points = {
 install_requires = [
     "argcomplete >= 1.8.2",
     "colorama >= 0.3.7",
+    "rtoml >= 0.9.0",
 ]
 
 setup(

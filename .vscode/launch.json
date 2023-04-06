@@ -9,7 +9,7 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "--metadata-file=data/metadata.yml",
+                "--metadata-file=data/metadata.toml",
                 "--debug",
             ]
         },
@@ -22,7 +22,7 @@
             "justMyCode": false,
             "args": [
                 "xfer",
-                "--metadata-file=data/demo1.pcb",
+                "--metadata-file=data/metadata.toml",
                 "--debug",
             ]
         }

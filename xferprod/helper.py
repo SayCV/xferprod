@@ -104,8 +104,8 @@ def collection_devops_items(devops: dict, val: str='files') -> list:
             src_dir = path(file[0]).parent
             src_file = path(file[0]).name
             _dst_dir = __sub_target
-            dst_dir = path(_dst_dir).parent
-            dst_file = path(_dst_dir).name
+            dst_dir = path(_dst_dir).parent if len(path(_dst_dir).parents) > 1 else path(_dst_dir)
+            dst_file = path(_dst_dir).name if len(path(_dst_dir).parents) > 1 else '.'
             files.append(XferFileConfig(src_dir, src_file, dst_dir, dst_file))
             pass
     return files

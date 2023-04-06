@@ -43,15 +43,16 @@ def run_xfer(args):
     data = helper.update_variables_recursive(data)
     target_flows = helper.get_dict_subkey(data, 'target')
     model = args.model if args.model else target_flows[0]
-    logger.debug(f"Found available flows: {target_flows} for model: {model}")
+    logger.debug(f"Found available flows: {target_flows} current used: {model}")
     devops = data.get('devops').get(model)
     flow_files = helper.collection_devops_items(devops)
     for file in flow_files:
-        logger.debug(file)
+        #logger.debug(file)
         src = file.src_dir/file.src_file
         dst = file.dst_dir/file.dst_file
         try:
             shutil.copy2(src, dst)
+            logger.debug(f"Try copy {src} -> {dst} done.")
         except Exception as e:
             logger.debug(f"Try copy {src} -> {dst} failed: {e.args[1]}")
             continue

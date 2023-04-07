@@ -20,7 +20,6 @@ def run_info(args):
 
 
 def run_xfer(args):
-    logger.info(f"Xfer Command Unimplemented!")
 
     metadata_file_lookup = [
         args.metadata_file,
@@ -77,12 +76,12 @@ def run_xfer(args):
             continue
 
     print('\n')
-    logger.info(f"Processed {flow_files.count()} total files: {copy_succeed_files.count()} succeed, {copy_failed_files.count()} failed.")
-    print('\n')
-    logger.info(f"Try copy succeed for following files:")
+    logger.info(f"Processed total {len(flow_files)} files: {len(copy_succeed_files)} succeed, {len(copy_failed_files)} failed.")
+    print('\n\n')
+    logger.info(f"Try copy succeed for following {len(copy_succeed_files)} files:\n")
     print(*(item for item in copy_succeed_files), sep='\n')
     print('\n')
-    logger.info(f"Try copy failed for following files:")
+    logger.info(f"Try copy failed for following {len(copy_failed_files)} files:\n")
     print(*(item for item in copy_failed_files), sep='\n')
-    print('\n')
+    print('\n\n')
 

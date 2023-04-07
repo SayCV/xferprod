@@ -15,6 +15,9 @@ import rtoml
 
 from .exceptions import XferprodException
 
+logger = logging.getLogger(__name__)
+
+
 XFERPROD_ROOT = path(__file__).resolve().parent
 
 class XferFileConfig(object):
@@ -118,13 +121,16 @@ def collection_devops_items(devops: dict, files_key: str='files') -> list:
                 dstdir = _target
 
             if filename_is_regex(srcfile.name):
-                #glob_files = []
+                glob_files = []
                 dst_dir = dstdir
                 for lookup_file in srcdir.glob(srcfile.name):
-                    #glob_files.append(lookup_file)
+                    glob_files.append(lookup_file)
                     dst_file = dstfile if not dstfile == '' else lookup_file.name
                     dst_file = auto_renamed_filename(dst_file)
                     files.append(XferFileConfig(lookup_file.parent, lookup_file.name, dst_dir, dst_file))
+                    pass
+                if len(glob_files) < 1:
+                    logger.debug(F"No files found {srcfile.name} in {srcdir}")
                     pass
             else:
                 src_dir = srcdir

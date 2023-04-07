@@ -23,6 +23,7 @@
             "args": [
                 "xfer",
                 "--metadata-file=data/metadata.toml",
+                "--model=prodflow",
                 "--debug",
             ]
         }

@@ -86,26 +86,77 @@ def get_dict_subkey(data: dict, sub: str=None) -> list:
             fields.append(k)
     return fields
 
-def collection_devops_items(devops: dict, val: str='files') -> list:
+def collection_devops_items(devops: dict, files_key: str='files') -> list:
     files = []
     _items = get_dict_subkey(devops)
 
     for _item in _items:
         _class = devops.get(_item)
-        _target: path = _class.get('target')
-        _files = _class.get(val)
+        _target: path = path(_class.get('target'))
+        _files = _class.get(files_key)
         for file in _files:
-            if len(file) > 2 or len(file) < 1:
-                raise XferprodException(f"Value invalid raised at {path(__file__).name} line {sys._getframe().f_lineno}")
-            elif len(file) == 2 and not file[1] == '':
-                __sub_target = _target / file[1]
+            if not isinstance(file, list):
+                raise XferprodException(f"Invalid list raised at {path(__file__).name} line {sys._getframe().f_lineno}")
+            # file:[] = [srcfile, dstfile] | [srcfile]
+            filelist_count = len(file) # choice = [1, 2]
+            if filelist_count > 2 or filelist_count < 1:
+                raise XferprodException(f"Invalid value raised at {path(__file__).name} line {sys._getframe().f_lineno}")
+
+            srcfile = path(file[0])
+            #srcdir = path.cwd() if not path(srcfile).is_absolute() else path(srcfile).parent
+            srcdir = path(srcfile).parent
+
+            if filelist_count == 2 and not file[1] == '':
+                if file[1].endswith('/.'):
+                    dstfile = ''
+                    dstdir = _target / path(file[1])
+                else:
+                    dstfile =  path(file[1]).name
+                    dstdir = _target / path(file[1]).parent
             else:
-                __sub_target = _target
-            src_dir = path(file[0]).parent
-            src_file = path(file[0]).name
-            _dst_dir = __sub_target
-            dst_dir = path(_dst_dir).parent if len(path(_dst_dir).parents) > 1 else path(_dst_dir)
-            dst_file = path(_dst_dir).name if len(path(_dst_dir).parents) > 1 else '.'
-            files.append(XferFileConfig(src_dir, src_file, dst_dir, dst_file))
+                dstfile = ''
+                dstdir = _target
+
+            if filename_is_regex(srcfile.name):
+                #glob_files = []
+                dst_dir = dstdir
+                for lookup_file in srcdir.glob(srcfile.name):
+                    #glob_files.append(lookup_file)
+                    dst_file = dstfile if not dstfile == '' else lookup_file.name
+                    dst_file = auto_renamed_filename(dst_file)
+                    files.append(XferFileConfig(lookup_file.parent, lookup_file.name, dst_dir, dst_file))
+                    pass
+            else:
+                src_dir = srcdir
+                src_file = srcfile.name
+                dst_dir = dstdir
+                dst_file = dstfile if not dstfile == '' else srcfile.name
+                dst_file = auto_renamed_filename(dst_file)
+                files.append(XferFileConfig(src_dir, src_file, dst_dir, dst_file))
             pass
     return files
+
+def auto_renamed_filename(filename: str) -> str:
+    f1_lookup = r'^\d{6}'
+    f2_lookup = r'^[a-zA-Z]{4}\d{8}'
+    new_filename = filename
+    fields = filename.split('-')
+    start = len(fields)
+    if start > 2:
+        pattern = re.compile(f1_lookup)
+        f1_matched = pattern.match(fields[0])
+        pattern = re.compile(f2_lookup)
+        f2_matched = pattern.match(fields[1])
+        if f1_matched and f2_matched:
+            new_filename = filename[len(fields[0]) + len(fields[1]) + 2:]
+    return new_filename
+
+def filename_is_regex(file: str) -> bool:
+    is_valid = False
+    try :
+        open(file, 'r')
+    except OSError as e:
+        if e.strerror == 'Invalid argument':
+            is_valid = True
+
+    return is_valid

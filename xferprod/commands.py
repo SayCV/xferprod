@@ -46,14 +46,38 @@ def run_xfer(args):
     logger.debug(f"Found available flows: {target_flows} current used: {model}")
     devops = data.get('devops').get(model)
     flow_files = helper.collection_devops_items(devops)
+
+    meta_exportdir = data.get('owner').get(f"{model}_exportdir")
+    target_root = args.output_dir if args.output_dir else meta_exportdir if meta_exportdir else path.cwd()
+    logger.debug(f"Found meta_exportdir: {meta_exportdir}")
+    logger.debug(f"Set target_root: {target_root}")
+
+    copy_succeed_files = []
+    copy_failed_files = []
     for file in flow_files:
         #logger.debug(file)
-        src = file.src_dir/file.src_file
-        dst = file.dst_dir/file.dst_file
+        src = file.src_dir / file.src_file
+        dst = file.dst_dir / file.dst_file
+        if not path(src).is_absolute():
+            src = path.cwd() / file.src_dir / file.src_file
+        if not path(dst).is_absolute():
+            dst = target_root / file.dst_dir / file.dst_file
+
         try:
+            if file.dst_file == '' or file.dst_file == '.':
+                path(dst).mkdir(parents=True, exist_ok=True)
+                new_filename = helper.auto_renamed_filename(file.src_file)
+                dst = target_root / file.dst_dir / new_filename
+            else:
+                path(dst.parent).mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dst)
-            logger.debug(f"Try copy {src} -> {dst} done.")
+            copy_succeed_files.append(f"  {file.src_dir / file.src_file} -> {file.dst_dir / file.dst_file}")
         except Exception as e:
-            logger.debug(f"Try copy {src} -> {dst} failed: {e.args[1]}")
+            copy_failed_files.append(f"  {file.src_dir / file.src_file} -> {file.dst_dir / file.dst_file} failed: {e.args[1]}")
             continue
+
+    logger.info(f"Try copy succeed for following files:")
+    print(*(item for item in copy_succeed_files), sep='\n')
+    logger.info(f"Try copy failed for following files:")
+    print(*(item for item in copy_failed_files), sep='\n')
 

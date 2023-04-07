@@ -59,7 +59,7 @@ def main():
     parent.add_argument(
         "--output-dir",
         type=path,
-        help="Save file root path",
+        help="The export target root directory",
         default=None,
     )
     parent.add_argument(

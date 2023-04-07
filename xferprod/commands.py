@@ -76,8 +76,11 @@ def run_xfer(args):
             copy_failed_files.append(f"  {file.src_dir / file.src_file} -> {file.dst_dir / file.dst_file} failed: {e.args[1]}")
             continue
 
+    print('\n')
     logger.info(f"Try copy succeed for following files:")
     print(*(item for item in copy_succeed_files), sep='\n')
+    print('\n')
     logger.info(f"Try copy failed for following files:")
     print(*(item for item in copy_failed_files), sep='\n')
+    print('\n')
 

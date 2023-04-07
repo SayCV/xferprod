@@ -77,6 +77,8 @@ def run_xfer(args):
             continue
 
     print('\n')
+    logger.info(f"Processed {flow_files.count()} total files: {copy_succeed_files.count()} succeed, {copy_failed_files.count()} failed.")
+    print('\n')
     logger.info(f"Try copy succeed for following files:")
     print(*(item for item in copy_succeed_files), sep='\n')
     print('\n')

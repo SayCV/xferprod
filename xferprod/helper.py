@@ -66,8 +66,8 @@ def get_variables_recursive(data: dict):
                 vv = t.substitute(d)
                 v = vv
                 pass
-            globals()[f"__lol__{k}"] = v # vars()
-            d[k] = v
+        globals()[f"__lol__{k}"] = v # vars()
+        d[k] = v
         pass
 
 def update_variables_recursive(data: dict) -> str:

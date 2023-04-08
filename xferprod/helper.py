@@ -9,6 +9,7 @@ import re
 import sys
 from pathlib import Path as path
 from string import Template
+from typing import Any, Dict
 
 import colorama
 import rtoml
@@ -49,6 +50,30 @@ def set_terminal_title(title):
     if sys.stdout.isatty():
         sys.stdout.write(colorama.ansi.set_title(title))
         sys.stdout.flush()
+
+def toml_load(metadata_file_list: list) -> Dict[str, Any]:
+    data = load_metadata_file(metadata_file_list)
+    data = update_variables_recursive(data)
+    return data
+
+def load_metadata_file(metadata_file_list: list) -> Dict[str, Any]:
+
+    metadata_file_lookup = metadata_file_list
+    key_field = data = None
+    for metadata_file in metadata_file_lookup:
+        try:
+            data = rtoml.load(metadata_file)
+            key_field = data.get('title')
+            logger.info(f"Try lookup {metadata_file} succeeded.")
+            break
+        except Exception as e:
+            logger.debug(f"Try lookup {metadata_file} failed: {e.args[1]}")
+            continue
+    if not data:
+        raise XferprodException(f"Metadata file non exist raised at {path(__file__).name} line {sys._getframe().f_lineno}")
+    if not key_field:
+        raise XferprodException(f"Metadata file corrupted raised at {path(__file__).name} line {sys._getframe().f_lineno}")
+    return data
 
 def get_variables_recursive(data: dict):
     lookup = r'.*\${(.*)}.*'

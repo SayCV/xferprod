@@ -89,8 +89,8 @@ def main():
         help="hidden files",
     )
     parent_format.add_argument(
-        "--link",
-        action="store_true",
+        "--disable-root-link",
+        action="store_false",
         help="Link files for save spaces",
     )
 

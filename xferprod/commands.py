@@ -21,36 +21,55 @@ def run_info(args):
 
 def run_xfer(args):
 
-    metadata_file_lookup = [
-        args.metadata_file,
-    ]
-    key_field = data = None
-    for metadata_file in metadata_file_lookup:
-        try:
-            data = rtoml.load(metadata_file)
-            key_field = data.get('title')
-            logger.info(f"Try lookup {metadata_file} succeeded.")
-            break
-        except Exception as e:
-            logger.debug(f"Try lookup {metadata_file} failed: {e.args[1]}")
-            continue
-    if not data:
-        raise XferprodException(f"Metadata file non exist raised at {path(__file__).name} line {sys._getframe().f_lineno}")
-    if not key_field:
-        raise XferprodException(f"Metadata file corrupted raised at {path(__file__).name} line {sys._getframe().f_lineno}")
-    
-    data = helper.update_variables_recursive(data)
+    data = helper.toml_load([args.metadata_file])
     target_flows = helper.get_dict_subkey(data, 'target')
     model = args.model if args.model else target_flows[0]
     logger.debug(f"Found available flows: {target_flows} current used: {model}")
-    devops = data.get('devops').get(model)
-    flow_files = helper.collection_devops_items(devops)
 
-    meta_exportdir = data.get('owner').get(f"{model}_exportdir")
+    owner = data.get('owner')
+    meta_root = owner.get(f"root")
+    meta_exportdir = owner.get(f"{model}_exportdir")
     target_root = args.output_dir if args.output_dir else meta_exportdir if meta_exportdir else path.cwd()
     logger.debug(f"Found meta_exportdir: {meta_exportdir}")
     logger.debug(f"Set target_root: {target_root}")
 
+    if meta_root:
+        logger.debug(f"Found root class.")
+        target = data.get('target').get(model)
+        if not target:
+            raise XferprodException(f"Invalid value raised at {path(__file__).name} line {sys._getframe().f_lineno}")
+        link_dirs = []
+        for subdir in target.get('subdir'):
+            len_item = len(subdir)
+            if len_item < 1:
+                raise XferprodException(f"Invalid value raised at {path(__file__).name} line {sys._getframe().f_lineno}")
+            elif len_item > 1:
+                project_srcdir_part = subdir[0]
+                project_dstdir_part = subdir[1]
+            else:
+                project_srcdir_part = subdir[0]
+                project_dstdir_part = subdir[0]
+            sub_data = helper.toml_load([path(project_srcdir_part) / 'metadata.toml'])
+            sub_meta_srcdir = path(project_srcdir_part) / sub_data.get('owner').get(f"{model}_exportdir")
+            sub_meta_dstdir = path(project_dstdir_part)
+            link_dirs.append([sub_meta_srcdir, sub_meta_dstdir])
+            pass
+        #print(*(item for item in link_dirs), sep='\n')
+        for link_srcdir, link_dstdir in link_dirs:
+            srcdir: path = path(link_srcdir)
+            dstdir: path = path(target_root) / link_dstdir
+            dstdir_depth = len(dstdir.parts) - 1
+            relative_srcdir = path(('../' * dstdir_depth).rstrip('/')) / srcdir
+            path(dstdir).parent.mkdir(parents=True, exist_ok=True)
+            try:
+                dstdir.symlink_to(relative_srcdir, target_is_directory=True)
+                print(f"  Linked done: {dstdir:32} <<===>> {relative_srcdir}")
+            except FileExistsError as e:
+                logger.debug(f"Link failed: {str(dstdir):32} -> {e.args[1]}")
+        return
+
+    devops = data.get('devops').get(model)
+    flow_files = helper.collection_devops_items(devops)
     copy_succeed_files = []
     copy_failed_files = []
     hidden_files = []

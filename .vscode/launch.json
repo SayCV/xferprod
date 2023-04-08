@@ -6,6 +6,7 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
@@ -18,12 +19,13 @@
             "type": "python",
             "request": "launch",
             "program": "test.py",
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
                 "xfer",
                 "--metadata-file=data/metadata.toml",
-                "--model=prodflow",
+                "--model=archiveflow",
                 "--debug",
             ]
         }

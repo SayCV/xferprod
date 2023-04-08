@@ -88,6 +88,11 @@ def main():
         action="store_true",
         help="hidden files",
     )
+    parent_format.add_argument(
+        "--link",
+        action="store_true",
+        help="Link files for save spaces",
+    )
 
 
     # Support multiple commands for this tool

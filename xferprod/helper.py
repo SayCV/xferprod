@@ -59,7 +59,7 @@ def get_variables_recursive(data: dict):
             get_variables_recursive(data[k])
         elif isinstance(v, list):
             continue
-        else:
+        elif isinstance(v, str):
             matched = pattern.findall(v)
             if len(matched) > 0:
                 t = Template(v)

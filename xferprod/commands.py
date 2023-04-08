@@ -53,8 +53,12 @@ def run_xfer(args):
 
     copy_succeed_files = []
     copy_failed_files = []
+    hidden_files = []
     for file in flow_files:
         #logger.debug(file)
+        if not args.hidden and file.src_file.startswith('.'):
+            hidden_files.append(f"  {file.src_dir / file.src_file} -> {file.dst_dir / file.dst_file}")
+            continue
         src = file.src_dir / file.src_file
         dst = file.dst_dir / file.dst_file
         if not path(src).is_absolute():
@@ -77,6 +81,7 @@ def run_xfer(args):
 
     print('\n')
     logger.info(f"Processed total {len(flow_files)} files: {len(copy_succeed_files)} succeed, {len(copy_failed_files)} failed.")
+    logger.info(f"Includes {'ignoring' if not args.hidden else 'copy'} {len(hidden_files)} hidden files.")
     print('\n\n')
     logger.info(f"Try copy succeed for following {len(copy_succeed_files)} files:\n")
     print(*(item for item in copy_succeed_files), sep='\n')

@@ -83,6 +83,11 @@ def main():
         help="model",
         default=None,
     )
+    parent_format.add_argument(
+        "--hidden",
+        action="store_true",
+        help="hidden files",
+    )
 
 
     # Support multiple commands for this tool

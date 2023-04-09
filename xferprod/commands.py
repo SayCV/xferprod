@@ -63,9 +63,9 @@ def run_xfer(args):
             path(dstdir).parent.mkdir(parents=True, exist_ok=True)
             try:
                 dstdir.symlink_to(relative_srcdir, target_is_directory=True)
-                print(f"  Linked done: {dstdir:32} <<===>> {relative_srcdir}")
+                print(f"  Linked done: {str(dstdir):32} <<===>> {relative_srcdir}")
             except FileExistsError as e:
-                logger.debug(f"Link failed: {str(dstdir):32} -> {e.args[1]}")
+                print(f"  Link failed: {str(dstdir):32} ------> {e.args[1]}")
         return
 
     devops = data.get('devops').get(model)
